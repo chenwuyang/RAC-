@@ -214,3 +214,24 @@ Controller.m
     }];
     [SVProgressHUD showWithStatus:@"加载中..."];
 }
+
+14.发送验证码按钮倒计时
+@property (nonatomic,assign)NSInteger time;
+@property (nonatomic,strong)RACDisposable *dispoable;
+
+@weakify(self);
+[[self.customButton rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
+    @strongify(self);
+    x.enabled = NO;
+    self.time = 60;
+    self.dispoable = [[RACSignal interval:1 onScheduler:[RACScheduler mainThreadScheduler]] subscribeNext:^(NSDate * _Nullable x) {
+        self.time--;
+        NSString * title = self.time > 0 ? [NSString stringWithFormat:@"%ld s",(long)self.time] : @"发送验证码";
+        [self.customButton setTitle:title forState:UIControlStateNormal | UIControlStateDisabled];
+        self.customButton.enabled = (self.time==0)?YES:NO;
+        if (self.time==0) {
+            [self.dispoable dispose];
+        }
+    }];
+}];
+
